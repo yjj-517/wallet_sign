@@ -21,6 +21,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 
 1.构建交易对象
+```
 import { ethers } from "ethers";
 
 //连接网络
@@ -57,9 +58,10 @@ let transaction = {
    data: "0x", //要部署的智能合约字节码。
 };
 console.log(transaction);
-
+```
 
 2.2签署交易(使用私钥)
+```
 // 签署交易
 // 私钥
 const privateKey ="私钥";
@@ -69,8 +71,10 @@ const signPromise = wallet.signTransaction(transaction);
 await signPromise.then((signedTransaction) => {
 console.log(signedTransaction);
 })
+```
 
 2.3广播交易(交易上链)
+```
 // 发布广播
 provider.sendTransaction(signedTransaction).then(async (tx) => {
 console.log(tx);
@@ -79,17 +83,14 @@ let res = await tx.wait();
 console.log(res);
 });
 });
+```
 
 2.4通过生成的encodeABI来调用合约
-
+```
 //通过合约的abi使用ethers进行重新构建
 const iface = new ethers.utils.Interface(ABI.abi);
 //通过合约参数和合约方法生成hash
 const encode = iface.encodeFunctionData("合约方法", ["合约参数",]);
 //最后将生成的这个值传给构建交易对象的data.
+```
 
-
-
-
-console.log(signedTransaction);
-})
