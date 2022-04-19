@@ -1,9 +1,9 @@
  <template>
-  <div id="Code">
-    <!-- 上传文件 -->
-    <div class="Code_box">
+  <div id="Token">
+    <!-- 转账 -->
+    <div class="Token_box">
       <p>
-        <span>合约网络:</span>
+        <span>转账网络:</span>
         <el-select v-model="ethernetsNum" placeholder="请选择">
           <el-option
             v-for="(item, index) in ethernets"
@@ -15,84 +15,41 @@
         </el-select>
       </p>
       <p>
-        <span>账户地址:</span>
-        <el-input
-          v-model="form.account1"
-          clearable
-          placeholder="请输入账户地址"
-        ></el-input>
-      </p>
-      <p>
-        <span>合约地址:</span>
-        <el-input
-          v-model="form.account2"
-          clearable
+        <span>合约地址:</span
+        ><el-input
+          v-model="nftaddress"
           placeholder="请输入合约地址"
-        ></el-input>
-      </p>
-      <p>
-        <span>转账金额:</span>
-        <el-input
-          v-model="form.money"
           clearable
-          placeholder="请输入转账金额"
         ></el-input>
-      </p>
-      <el-divider></el-divider>
-      <p>
-        <span>合约ABI:</span>
-        <el-button type="primary">
-          <input
-            class="Upload_box_input"
-            ref="file"
-            type="file"
-            name="file"
-            @change.stop="changesData"
-          />
-          <div class="json_box">
-            <p>(仅支持json格式上传)</p>
-            <p>{ "abi" : [ ] }</p>
-          </div>
-        </el-button>
+        <el-button class="usdt_box" type="primary" plain @click="onEthUSDT"
+          >ETH-USDT</el-button
+        >
+        <el-button class="usdt_box" type="primary" plain @click="onBscUSDT"
+          >BSC-USDT</el-button
+        >
       </p>
       <p>
-        <span>合约方法:</span>
-        <el-input
-          v-model="meansform.means"
+        <span>转账账号:</span
+        ><el-input
+          v-model="form.account1"
+          placeholder="请输入转账账号"
           clearable
-          placeholder="请输入合约方法"
         ></el-input>
       </p>
       <p>
-        <span>传入参数:</span>
-        <el-input
-          v-model="meansform.parameter1"
+        <span>转入账号:</span
+        ><el-input
+          v-model="form.account2"
+          placeholder="请输入转入账号"
           clearable
-          placeholder="请输入合约参数"
         ></el-input>
       </p>
       <p>
-        <span></span>
-        <el-input
-          v-model="meansform.parameter2"
+        <span>转账代币数量:</span
+        ><el-input
+          v-model="form.moneyToken"
+          placeholder="请输入转账代币数量"
           clearable
-          placeholder="请输入合约参数"
-        ></el-input>
-      </p>
-      <p>
-        <span></span>
-        <el-input
-          v-model="meansform.parameter3"
-          clearable
-          placeholder="请输入合约参数"
-        ></el-input>
-      </p>
-      <p>
-        <span>encodeABI:</span>
-        <el-input
-          v-model="form.data"
-          disabled
-          placeholder="自动生成encodeABI"
         ></el-input>
       </p>
       <el-divider></el-divider>
@@ -100,7 +57,6 @@
         <el-button type="primary" @click="found">构建交易对象</el-button>
       </p>
     </div>
-
     <!-- 邮费确认 -->
     <el-dialog
       class="postage"
@@ -110,16 +66,28 @@
       v-loading="loading"
     >
       <div class="postage_box">
+        <span>合约地址:</span><span>{{ this.nftaddress }}</span>
+      </div>
+      <div class="postage_box">
+        <span>合约信息:</span
+        ><span v-if="this.nftaddressCompany"
+          >{{ this.nftaddressCompany }} ( 精度:{{ this.nftaddressNum }} )</span
+        >
+      </div>
+      <div class="postage_box">
         <span>转账账号:</span><span>{{ this.form.account1 }}</span>
       </div>
       <div class="postage_box">
-        <span>余额:</span><span>{{ this.form.balance }} </span>
+        <span>余额:</span><span>{{ this.form.balance }}</span>
       </div>
       <div class="postage_box">
-        <span>合约账号:</span><span>{{ this.form.account2 }}</span>
+        <span>剩余代币数量:</span><span>{{ this.balanceToken }} </span>
       </div>
       <div class="postage_box">
-        <span>转账金额:</span><span>{{ this.form.money }} </span>
+        <span>转入账号:</span><span>{{ this.form.account2 }}</span>
+      </div>
+      <div class="postage_box">
+        <span>转账代币数量:</span><span>{{ this.form.moneyToken }} </span>
       </div>
       <div class="postage_box">
         <span>nonce:</span><span>{{ this.form.nonces }}</span>
@@ -173,8 +141,9 @@
 import ethernet from "@/assets/js/ethernet.json"; //获取网络json文件
 import Qrcode from "@/components/Qrcode.vue"; //二维码生成
 import { ethers } from "ethers"; //ethers.js
+import NFT from "../../assets/js/ERC20_ABI.json"; //ERC20标准json文件
 export default {
-  name: "Code",
+  name: "Token",
   // 模板引入
   components: {
     Qrcode,
@@ -182,107 +151,38 @@ export default {
   // 数据
   data() {
     return {
-      ethernetsNum: "", //选择网络index值
       loading: false, //加载
-      dialogVisible1: false, //遮罩层
-      dialogVisible2: false, //遮罩层
-      disabled: true, //按钮
+      dialogVisible1: false, //邮费弹框
+      dialogVisible2: false, //二维码弹框
+      ethernets: [], //以太网
+      ethernetsNum: "", //选择网络index值
+      nftaddress: "", //合约地址
+      nftaddressCompany: "", //合约单位
+      nftaddressNum: "", //合约规定位数
+      balanceToken: 0, //账户代币余额
       form: {
         account1: "", //转账账号
-        account2: "", //转入账号/合约地址
+        account2: "", //转入账号
         balance: 0, //账户余额
         gasPrice: 0, //gasPrice,gwei
         gasLimit: 0, //gasLimit
         chainIds: 0, //chainID
         nonces: 0, //账号nonce
         money: "0", //转账金额
-        data: "", //附加消息,要部署的智能合约字节码。
+        data: "", //附加消息,要部署的智能合约字节码
+        moneyToken: "", //转账代币金额
       },
-      // 传入的方法和参数
-      meansform: {
-        means: "", //方法
-        parameter1: "", //参数
-        parameter2: "", //参数
-        parameter3: "", //参数
-      },
-      abiData: {}, //上传合约abi
+      disabled: true, //确认按钮
       raw: "", //签署信息
     };
   },
   // 方法
   methods: {
-    // 获取上传文件
-    changesData(e) {
-      this.abiData = {};
-      const fileList = e.target.files[0];
-      let reader = new FileReader();
-      if (fileList.type == "application/json") {
-        // 判断文件格式
-        reader.readAsText(fileList);
-        reader.onload = (e) => {
-          // 获取bytecode
-          const { abi } = JSON.parse(e.target.result);
-          if (abi) {
-            this.abiData = abi;
-          } else {
-            this.$message.error("上传文件错误!");
-          }
-        };
-      } else {
-        this.$message.warning("请上传JSON格式文件!");
-      }
-    },
-    //构建交易对象
     async found() {
-      if (this.meansform.means && Object.keys(this.abiData).length !== 0) {
-        try {
-          // 重新构建abi
-          const iface = new ethers.utils.Interface(this.abiData);
-          if (!this.meansform.parameter1) {
-            // 生成函数encodeABI
-            this.form.data = iface.encodeFunctionData(this.meansform.means, []);
-          }
-          if (!this.meansform.parameter2) {
-            this.form.data = iface.encodeFunctionData(this.meansform.means, [
-              this.meansform.parameter1,
-            ]);
-          } else if (!this.meansform.parameter3) {
-            this.form.data = iface.encodeFunctionData(this.meansform.means, [
-              this.meansform.parameter1,
-              this.meansform.parameter2,
-            ]);
-          } else if (
-            this.meansform.parameter1 &&
-            this.meansform.parameter2 &&
-            this.meansform.parameter3
-          ) {
-            this.form.data = iface.encodeFunctionData(this.meansform.means, [
-              this.meansform.parameter1,
-              this.meansform.parameter2,
-              this.meansform.parameter3,
-            ]);
-          } else {
-            this.$message.warning("请填写正确的参数");
-          }
-          // 执行获取交易的内容
-          this.content();
-        } catch (e) {
-          // 监听错误
-          let err = e.message.substr(0, e.message.indexOf("("));
-          this.$alert(err, "ABI错误提示:", {
-            confirmButtonText: "确定",
-          });
-        }
-      } else {
-        this.$message.warning("请上传合约ABI和填写合约方法!");
-      }
-    },
-    // 获取交易内容
-    async content() {
-      if (this.form.account1 && this.form.account2) {
+      if (this.form.account1 && this.form.account2 && this.form.moneyToken) {
+        this.disabled = true;
         this.loading = true;
         this.dialogVisible1 = true;
-        this.disabled = true;
         try {
           // 开始签署连接网络
           if (
@@ -300,6 +200,29 @@ export default {
               }
             );
           }
+          // 构建合约ABI
+          const tokenContract = new ethers.Contract(
+            this.nftaddress,
+            NFT.abi,
+            provider
+          );
+          // 获取代币单位
+          this.nftaddressCompany = await tokenContract.symbol();
+          // 获取代币小数点
+          this.nftaddressNum = await tokenContract.decimals();
+          // 获取账户代币余额
+          let btNum = await tokenContract.balanceOf(this.form.account1);
+          this.balanceToken =
+            btNum.toString() / Math.pow(10, this.nftaddressNum);
+          // 重新构建abi
+          const iface = new ethers.utils.Interface(NFT.abi);
+          // 构建交易data
+          this.form.data = iface.encodeFunctionData("transfer", [
+            this.form.account2,
+            (
+              this.form.moneyToken * Math.pow(10, this.nftaddressNum)
+            ).toString(),
+          ]);
           // 获取余额
           const getBalance = await provider.getBalance(this.form.account1);
           this.form.balance = ethers.utils.formatUnits(
@@ -319,8 +242,7 @@ export default {
           // 估计gasLimit
           let gasl = await provider.estimateGas({
             from: this.form.account1,
-            to: this.form.account2,
-            value: ethers.utils.parseEther(this.form.money.toString()),
+            to: this.nftaddress,
             data: this.form.data,
           });
           this.form.gasLimit = gasl.toString();
@@ -336,18 +258,17 @@ export default {
           });
         }
       } else {
-        this.$message.warning("请填写账户地址和合约地址!");
+        this.$message.error("请填写相关数据!");
       }
     },
-    // 交易确定
-    onDefine() {
+    async onDefine() {
       this.raw = "";
       // 构建交易对象
       const transaction = {
         nonce: this.form.nonces, //账号的前一个交易计数
         chainId: this.form.chainIds, //网络
         from: this.form.account1, //发起账户
-        to: this.form.account2, //目标账户
+        to: this.nftaddress, //目标账户
         gasLimit: this.form.gasLimit * 1, // 交易能消耗Gas的上限
         gasPrice: this.form.gasPrice * Math.pow(10, 9), //Gas价格
         value: this.form.money, //转账金额,这边不做处理,由app做处理
@@ -362,6 +283,14 @@ export default {
       } else {
         this.$message.error("生成二维码失败!");
       }
+    },
+    onEthUSDT() {
+      // ETH-USDT合约地址
+      this.nftaddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+    },
+    onBscUSDT() {
+      // BSC-USDT合约地址
+      this.nftaddress = "0x55d398326f99059fF775485246999027B3197955";
     },
   },
   // 创建后
@@ -378,8 +307,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
-#Code {
-  .Code_box {
+#Token {
+  .Token_box {
     margin: 0 0 0 1rem;
     p {
       display: flex;
@@ -387,15 +316,12 @@ export default {
       line-height: 3rem;
       span {
         width: 10rem;
-        margin-right: 2rem;
-      }
-      .json_box {
-        p {
-          line-height: 1rem;
-        }
       }
       .el-input {
         width: 30rem;
+      }
+      .usdt_box {
+        margin-left: 1rem;
       }
     }
   }
@@ -409,6 +335,9 @@ export default {
       }
       span:nth-child(2) {
         width: 70%;
+        overflow: hidden; //溢出隐藏
+        white-space: nowrap; //禁止换行
+        text-overflow: ellipsis; //...
       }
     }
     .gas {

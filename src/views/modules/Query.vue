@@ -3,7 +3,11 @@
     <div class="Query_box">
       <p>
         <span>合约地址:</span>
-        <el-input v-model="nftaddress" clearable></el-input>
+        <el-input
+          v-model="nftaddress"
+          clearable
+          placeholder="请输入合约地址"
+        ></el-input>
       </p>
       <p>
         <span>合约ABI:</span>
@@ -24,19 +28,35 @@
       <el-divider></el-divider>
       <p>
         <span>合约方法:</span>
-        <el-input v-model="meansform.means" clearable></el-input>
+        <el-input
+          v-model="meansform.means"
+          clearable
+          placeholder="请输入合约方法"
+        ></el-input>
       </p>
       <p>
         <span>传入参数:</span>
-        <el-input v-model="meansform.parameter1" clearable></el-input>
+        <el-input
+          v-model="meansform.parameter1"
+          clearable
+          placeholder="请输入合约参数"
+        ></el-input>
       </p>
       <p>
         <span></span>
-        <el-input v-model="meansform.parameter2" clearable></el-input>
+        <el-input
+          v-model="meansform.parameter2"
+          clearable
+          placeholder="请输入合约参数"
+        ></el-input>
       </p>
       <p>
         <span></span>
-        <el-input v-model="meansform.parameter3" clearable></el-input>
+        <el-input
+          v-model="meansform.parameter3"
+          clearable
+          placeholder="请输入合约参数"
+        ></el-input>
       </p>
       <el-divider></el-divider>
       <p>
@@ -90,8 +110,7 @@
 </template>
 
 <script>
-import { ethers } from "ethers";
-import Web3Modal from "web3modal"; //引入web3modal
+import abiContract from "@/assets/js/abi.js";
 export default {
   name: "Query",
   // 模板引入
@@ -141,35 +160,6 @@ export default {
         this.$message.warning("请上传JSON格式文件!");
       }
     },
-    // 连接合约和钱包
-    async abiContract(that) {
-      try {
-        //连接钱包，获取签名
-        const web3Modal = new Web3Modal({
-          network: "mainnet",
-          cacheProvider: true,
-        });
-        const connection = await web3Modal.connect();
-        const provider = new ethers.providers.Web3Provider(connection);
-        const signer = provider.getSigner();
-        return {
-          //连接合约与对应的abi接口，使其可以调用abi接口
-          nftContract: new ethers.Contract(
-            that.nftaddress,
-            that.abiData,
-            signer
-          ),
-          tokenContract: new ethers.Contract(
-            that.nftaddress,
-            that.abiData,
-            provider
-          ),
-          nftaddress: that.nftaddress,
-        };
-      } catch (e) {
-        this.$message.warning("网络错误");
-      }
-    },
     // 查询合约
     async onQuery() {
       if (
@@ -180,8 +170,7 @@ export default {
         this.queryStr = "";
         try {
           //重新构建abiContract引进函数
-          const that = this;
-          const contract = await new this.abiContract(that);
+          const contract = await new abiContract(this.nftaddress, this.abiData);
           // 参数判断
           if (!this.meansform.parameter1) {
             var res = await contract.tokenContract[this.meansform.means]();
@@ -216,6 +205,7 @@ export default {
             this.$message.error("查询错误!!!");
           }
         } catch (e) {
+          console.log(e);
           let err = e.message.substr(0, e.message.indexOf("("));
           this.$confirm(err, "错误提示", {
             type: "error",
@@ -239,8 +229,7 @@ export default {
         this.disabled = true;
         try {
           //重新构建abiContract引进函数
-          const that = this;
-          const contract = await new this.abiContract(that);
+          const contract = await new abiContract(this.nftaddress, this.abiData);
           // 参数判断
           if (!this.meansform.parameter1) {
             var res = await contract.nftContract[this.meansform.means]();

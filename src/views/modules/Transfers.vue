@@ -18,7 +18,7 @@
         <span>转账账号:</span
         ><el-input
           v-model="form.account1"
-          placeholder="请输入账号"
+          placeholder="请输入转账账号"
           clearable
         ></el-input>
       </p>
@@ -26,7 +26,7 @@
         <span>转入账号:</span
         ><el-input
           v-model="form.account2"
-          placeholder="请输入账号"
+          placeholder="请输入转入账号"
           clearable
         ></el-input>
       </p>
@@ -34,7 +34,7 @@
         <span>转账金额:</span
         ><el-input
           v-model="form.money"
-          placeholder="请输入金额"
+          placeholder="请输入转账金额"
           clearable
         ></el-input>
       </p>
@@ -55,13 +55,13 @@
         <span>转账账号:</span><span>{{ this.form.account1 }}</span>
       </div>
       <div class="postage_box">
-        <span>余额:</span><span>{{ this.form.balance }} ETH</span>
+        <span>余额:</span><span>{{ this.form.balance }} </span>
       </div>
       <div class="postage_box">
         <span>转入账号:</span><span>{{ this.form.account2 }}</span>
       </div>
       <div class="postage_box">
-        <span>转账金额:</span><span>{{ this.form.money }} ETH</span>
+        <span>转账金额:</span><span>{{ this.form.money }} </span>
       </div>
       <div class="postage_box">
         <span>nonce:</span><span>{{ this.form.nonces }}</span>
@@ -191,7 +191,7 @@ export default {
             value: ethers.utils.parseEther(this.form.money.toString()),
             data: this.form.data,
           });
-          this.form.gasLimit = gasl.toNumber();
+          this.form.gasLimit = gasl.toString();
           this.loading = false;
           this.disabled = false;
         } catch (e) {

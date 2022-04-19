@@ -1,5 +1,5 @@
  <template>
-  <div id="Broadcast">
+  <div id="Broadcast" v-loading="loading">
     <!-- 网络选择 -->
     <div class="Broadcast_box">
       <p>
@@ -104,6 +104,7 @@ export default {
   // 数据
   data() {
     return {
+      loading: false, //
       ethernets: [], //以太网
       ethernetsNum: "", //选择网络index值
       imgurl: "", //二维码图片
@@ -169,6 +170,7 @@ export default {
         type: "warning",
       })
         .then(async () => {
+          this.loading = true;
           this.disabled = true;
           this.dialogVisible = false;
           this.active = 1;
@@ -204,9 +206,11 @@ export default {
               this.active = 2;
               this.icons = "el-icon-circle-check";
               this.disabled = false;
+              this.loading = false;
             } catch (e) {
               this.disabled = true;
               this.dialogVisible = false;
+              this.loading = false;
               this.active = 1;
               this.icons = "el-icon-loading";
               this.transactionHash = "";

@@ -30,6 +30,11 @@ const routes = [
         component: () => import("../views/modules/Contract.vue")
       },
       {
+        path: "/index/Token",
+        name: "/index/Token",
+        component: () => import("../views/modules/Token.vue")
+      },
+      {
         path: "/index/Broadcast",
         name: "/index/Broadcast",
         component: () => import("../views/modules/Broadcast.vue")

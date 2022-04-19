@@ -178,13 +178,27 @@ export default {
     },
     // 下载生成的json文件
     download() {
+      // 获取当前时间戳
+      var time = new Date();
+      let timeSty =
+        time.getFullYear() +
+        "-" +
+        (time.getMonth() + 1) +
+        "-" +
+        time.getDate() +
+        "-" +
+        time.getHours() +
+        "-" +
+        time.getMinutes() +
+        "-" +
+        time.getSeconds();
       let uri =
         "data:text/csv;charset=utf-8,\ufeff" + encodeURIComponent(this.raw);
       //通过创建a标签实现
       let link = document.createElement("a");
       link.href = uri;
       //对下载的文件命名
-      link.download = "signData.json";
+      link.download = timeSty + "signData.json";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

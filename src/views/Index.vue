@@ -85,14 +85,20 @@ export default {
         {
           index: "/index/Contract",
           i: "el-icon-magic-stick",
-          text: "部署合约页面",
-          bread: ["部署合约页面"],
+          text: "部署合约",
+          bread: ["部署合约"],
+        },
+        {
+          index: "/index/Token",
+          i: "el-icon-coin",
+          text: "代币转账",
+          bread: ["代币转账"],
         },
         {
           index: "/index/Code",
           i: "el-icon-s-claim",
-          text: "调用合约",
-          bread: ["调用合约"],
+          text: "调用合约方法",
+          bread: ["调用合约方法"],
         },
         {
           index: "/index/Broadcast",

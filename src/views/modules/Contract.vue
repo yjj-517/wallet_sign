@@ -55,13 +55,13 @@
         <span>转账账号:</span><span>{{ this.form.account1 }}</span>
       </div>
       <div class="postage_box">
-        <span>余额:</span><span>{{ this.form.balance }} ETH</span>
+        <span>余额:</span><span>{{ this.form.balance }} </span>
       </div>
       <!-- <div class="postage_box">
         <span>转入账号:</span><span>{{ this.form.account2 }}</span>
       </div> -->
       <!-- <div class="postage_box">
-        <span>转账金额:</span><span>{{ this.form.money }} ETH</span>
+        <span>转账金额:</span><span>{{ this.form.money }} </span>
       </div> -->
       <div class="postage_box">
         <span>nonce:</span><span>{{ this.form.nonces }}</span>
@@ -215,7 +215,7 @@ export default {
             from: this.form.account1,
             data: this.form.data,
           });
-          this.form.gasLimit = gasl.toNumber();
+          this.form.gasLimit = gasl.toString();
           this.loading = false;
           this.disabled = false;
         } catch (e) {
@@ -255,6 +255,20 @@ export default {
     },
     // 下载生成的json文件
     download() {
+      // 获取当前时间戳
+      var time = new Date();
+      let timeSty =
+        time.getFullYear() +
+        "-" +
+        (time.getMonth() + 1) +
+        "-" +
+        time.getDate() +
+        "-" +
+        time.getHours() +
+        "-" +
+        time.getMinutes() +
+        "-" +
+        time.getSeconds();
       let uri =
         "data:text/csv;charset=utf-8,\ufeff" +
         encodeURIComponent(this.transactionData);
@@ -262,7 +276,7 @@ export default {
       let link = document.createElement("a");
       link.href = uri;
       //对下载的文件命名
-      link.download = "transactionData.json";
+      link.download = timeSty + "transaction.json";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
